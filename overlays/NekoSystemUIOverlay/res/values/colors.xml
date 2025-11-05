@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material-inspired accent colors for quick settings and notification shade -->
+    <color name="system_accent1_500">#FF6200EE</color>
+    <color name="system_accent2_500">#FF03DAC5</color>
+    <color name="system_neutral1_500">#FF1F1F1F</color>
+
+    <!-- TODO: add more overlay resources here -->
+</resources>

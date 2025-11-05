@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Customization script that patches an official AOSP GSI system image with NekoOS assets.
+# Requires sudo for mounting the raw image.
+
+: "${GSI_URL:=https://example.com/path/to/aosp-gsi.zip}"  # TODO: set to real Android 16 GSI download URL
+: "${GSI_ZIP:=aosp-gsi.zip}"
+: "${WORK_DIR:=work}"
+: "${OUTPUT_DIR:=output}"
+
+log() {
+  echo "[NekoOS] $*"
+}
+
+require_tool() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "fatal: required tool '$1' not found" >&2
+    exit 1
+  fi
+}
+
+main() {
+  require_tool curl
+  require_tool unzip
+  require_tool simg2img
+  require_tool img2simg
+  require_tool e2fsck
+  require_tool resize2fs
+
+  mkdir -p downloads "${WORK_DIR}" "${OUTPUT_DIR}"
+
+  if [ ! -f "downloads/${GSI_ZIP}" ]; then
+    log "Downloading GSI from ${GSI_URL}"
+    curl -L "${GSI_URL}" -o "downloads/${GSI_ZIP}"
+  else
+    log "Using cached downloads/${GSI_ZIP}"
+  fi
+
+  if [ ! -f "${WORK_DIR}/system.img" ]; then
+    log "Extracting system image"
+    unzip -o "downloads/${GSI_ZIP}" system.img -d "${WORK_DIR}"
+  fi
+
+  if [ ! -f "${WORK_DIR}/system.raw.img" ]; then
+    log "Converting sparse system image to raw"
+    simg2img "${WORK_DIR}/system.img" "${WORK_DIR}/system.raw.img"
+  fi
+
+  log "Running filesystem check"
+  sudo e2fsck -fy "${WORK_DIR}/system.raw.img"
+
+  log "Expanding filesystem to provide customization headroom"
+  sudo resize2fs "${WORK_DIR}/system.raw.img" 6144M
+
+  MOUNT_DIR="${WORK_DIR}/mount"
+  mkdir -p "${MOUNT_DIR}"
+  log "Mounting raw image"
+  sudo mount -o loop "${WORK_DIR}/system.raw.img" "${MOUNT_DIR}"
+
+  log "Applying overlays"
+  sudo mkdir -p "${MOUNT_DIR}/system/product/overlay/NekoSystemUIOverlay"
+  sudo cp -r overlays/NekoSystemUIOverlay/. "${MOUNT_DIR}/system/product/overlay/NekoSystemUIOverlay/"
+
+  if [ -f assets/bootanimation/bootanimation.zip ]; then
+    log "Installing custom bootanimation"
+    sudo cp assets/bootanimation/bootanimation.zip "${MOUNT_DIR}/system/media/bootanimation.zip"
+  else
+    log "No custom bootanimation.zip provided, skipping"
+  fi
+
+  if [ -f props/system.prop ]; then
+    log "Appending custom properties"
+    sudo tee -a "${MOUNT_DIR}/system/build.prop" < props/system.prop >/dev/null
+  fi
+
+  log "Unmounting image"
+  sudo umount "${MOUNT_DIR}"
+
+  log "Shrinking filesystem to minimum"
+  sudo resize2fs -M "${WORK_DIR}/system.raw.img"
+  sudo e2fsck -fy "${WORK_DIR}/system.raw.img"
+
+  log "Converting raw image back to sparse format"
+  img2simg "${WORK_DIR}/system.raw.img" "${OUTPUT_DIR}/system-neko.img"
+
+  log "Customization complete: ${OUTPUT_DIR}/system-neko.img"
+}
+
+main "$@"

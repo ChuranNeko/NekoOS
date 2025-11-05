@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 声明 overlay 包，目标为 com.android.systemui -->
+<!-- Neko overlay for SystemUI tweaks on top of official AOSP GSI -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.neko.overlay.systemui"
     android:versionCode="1"
@@ -10,7 +10,5 @@
     <overlay
         android:priority="1"
         android:targetPackage="com.android.systemui"
-        android:isStatic="true"
-        android:requiredSystemPropertyName="ro.systemui.google_style"
-        android:requiredSystemPropertyValue="1" />
+        android:isStatic="true" />
 </manifest>

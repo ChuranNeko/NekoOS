@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Material You 动态色的基础数值 -->
-    <color name="material_dynamic_primary0">#FF1F1F1F</color>
-    <color name="material_dynamic_primary50">#FFEADDFF</color>
-    <color name="material_dynamic_secondary50">#FFF2F0FF</color>
-
-    <!-- TODO: add more overlays或预置颜色以扩展主题 -->
-</resources>

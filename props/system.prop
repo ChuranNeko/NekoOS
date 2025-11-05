@@ -1,0 +1,5 @@
+# Additional system properties applied during customization
+ro.neko.version=NekoOS-GSI
+ro.neko.pixel_style=1
+
+# TODO: append more properties as needed

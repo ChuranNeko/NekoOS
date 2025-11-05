@@ -29,60 +29,26 @@ jobs:
           df -h /
         shell: bash
 
-      - name: Install build dependencies
+      - name: Install customization dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            openjdk-11-jdk git-core gnupg flex bison gperf \
-            build-essential zip curl zlib1g-dev gcc-multilib g++-multilib \
-            lib32ncurses5-dev libncurses5-dev x11proto-core-dev libx11-dev \
-            lib32z1-dev libgl1-mesa-dev xsltproc unzip python3 python-is-python3
-
-      - name: Install repo tool
-        run: |
-          sudo curl https://storage.googleapis.com/git-repo-downloads/repo -o /usr/local/bin/repo
-          sudo chmod a+x /usr/local/bin/repo
+          sudo apt-get install -y android-sdk-libsparse-utils e2fsprogs unzip curl
         shell: bash
 
-      - name: Setup repo
+      - name: Download and customize GSI
+        env:
+          GSI_URL: ${{ secrets.GSI_URL }}
         run: |
-          mkdir -p source
-          cd source
-          if [ ! -d ".repo" ]; then
-            repo init -u https://android.googlesource.com/platform/manifest -b android-16.0.0_r1
+          if [ -z "${GSI_URL}" ]; then
+            echo "GSI_URL secret is not set. Please configure repository secret 'GSI_URL'." >&2
+            exit 1
           fi
-          repo sync -c --force-sync --no-clone-bundle --no-tags
+          chmod +x build.sh
+          ./build.sh
         shell: bash
 
-      - name: Sync NekoOS customizations
-        run: |
-          mkdir -p source/device source/vendor source/packages source/system
-          rsync -a device/ source/device/
-          rsync -a vendor/ source/vendor/
-          rsync -a packages/ source/packages/
-          rsync -a system/ source/system/
-        shell: bash
-
-      - name: Clone PixelExperience vendor_pixel-framework
-        run: |
-          cd source
-          if [ ! -d vendor/pixel-framework/.git ]; then
-            git clone https://github.com/PixelExperience/vendor_pixel-framework.git vendor/pixel-framework || true
-          else
-            git -C vendor/pixel-framework pull --ff-only || true
-          fi
-        shell: bash
-
-      - name: Build systemimage
-        run: |
-          cd source
-          source build/envsetup.sh
-          lunch aosp_arm64_ab-userdebug
-          m -j$(nproc) systemimage
-        shell: bash
-
-      - name: Upload system.img artifact
+      - name: Upload customized system image
         uses: actions/upload-artifact@v4
         with:
           name: nekoos-systemimage
-          path: source/out/target/product/arm64_ab/system.img
+          path: output/system-neko.img
