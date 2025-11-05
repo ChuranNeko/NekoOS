@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 声明 overlay 包，目标为 com.android.systemui -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.neko.overlay.systemui"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <application android:hasCode="false" />
+
+    <overlay
+        android:priority="1"
+        android:targetPackage="com.android.systemui"
+        android:isStatic="true"
+        android:requiredSystemPropertyName="ro.systemui.google_style"
+        android:requiredSystemPropertyValue="1" />
+</manifest>

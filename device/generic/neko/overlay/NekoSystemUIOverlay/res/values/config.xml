@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 自定义 SystemUI 颜色，模拟 Pixel 风格 -->
+    <color name="system_accent1_500">#FF6200EE</color>
+    <color name="system_accent2_500">#FF03DAC5</color>
+
+    <!-- TODO: add more overlays or prebuilt apps here -->
+</resources>

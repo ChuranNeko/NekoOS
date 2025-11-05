@@ -1,0 +1,64 @@
+name: Build NekoOS GSI
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jdk git-core gnupg flex bison gperf             build-essential zip curl zlib1g-dev gcc-multilib g++-multilib             lib32ncurses5-dev libncurses5-dev x11proto-core-dev libx11-dev             lib32z1-dev libgl1-mesa-dev xsltproc unzip python3 python-is-python3
+
+      - name: Setup repo
+        run: |
+          mkdir -p source
+          cd source
+          if [ ! -d ".repo" ]; then
+            repo init -u https://android.googlesource.com/platform/manifest -b android-16.0.0_r1
+          fi
+          repo sync -c --force-sync --no-clone-bundle --no-tags
+        shell: bash
+
+      - name: Sync NekoOS customizations
+        run: |
+          mkdir -p source/device source/vendor source/packages source/system
+          rsync -a device/ source/device/
+          rsync -a vendor/ source/vendor/
+          rsync -a packages/ source/packages/
+          rsync -a system/ source/system/
+        shell: bash
+
+      - name: Clone PixelExperience vendor_pixel-framework
+        run: |
+          cd source
+          if [ ! -d vendor/pixel-framework/.git ]; then
+            git clone https://github.com/PixelExperience/vendor_pixel-framework.git vendor/pixel-framework || true
+          else
+            git -C vendor/pixel-framework pull --ff-only || true
+          fi
+        shell: bash
+
+      - name: Build systemimage
+        run: |
+          cd source
+          source build/envsetup.sh
+          lunch aosp_arm64_ab-userdebug
+          m -j$(nproc) systemimage
+        shell: bash
+
+      - name: Upload system.img artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nekoos-systemimage
+          path: source/out/target/product/arm64_ab/system.img

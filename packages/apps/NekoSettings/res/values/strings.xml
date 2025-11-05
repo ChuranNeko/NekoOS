@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Neko Settings</string>
+    <string name="app_description">自定义 GSI 设置入口，可在此扩展更多功能。</string>
+</resources>
