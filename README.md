@@ -24,7 +24,7 @@ NekoOS 现以官方 AOSP GSI 为基础，通过脚本流程注入 Pixel 风格 o
 3. 在 Ubuntu 环境执行：
 
    ```bash
-   sudo apt-get install -y android-sdk-libsparse-utils e2fsprogs unzip curl
+   sudo apt-get install -y android-sdk-libsparse-utils e2fsprogs unzip curl erofs-utils fuse3 rsync
    chmod +x scripts/customize_gsi.sh
    sudo GSI_FLAVOR=arm64 ./scripts/customize_gsi.sh   # 或 arm64_gms
    ```

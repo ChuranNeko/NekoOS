@@ -3,7 +3,15 @@ set -euo pipefail
 
 # Convenience wrapper that ensures dependencies exist before running the main customization script.
 
-required_packages=(android-sdk-libsparse-utils e2fsprogs unzip curl)
+required_packages=(
+  android-sdk-libsparse-utils
+  e2fsprogs
+  unzip
+  curl
+  erofs-utils
+  fuse3
+  rsync
+)
 missing=()
 for pkg in "${required_packages[@]}"; do
   if ! dpkg -s "$pkg" >/dev/null 2>&1; then
