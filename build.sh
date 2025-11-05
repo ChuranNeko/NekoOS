@@ -17,6 +17,8 @@ if [ ${#missing[@]} -ne 0 ]; then
   sudo apt-get install -y "${missing[@]}"
 fi
 
+chmod +x scripts/customize_gsi.sh
+
 env_args=()
 if [ -n "${GSI_FLAVOR:-}" ]; then
   env_args+=("GSI_FLAVOR=${GSI_FLAVOR}")
@@ -34,4 +36,4 @@ if [ -n "${OUTPUT_DIR:-}" ]; then
   env_args+=("OUTPUT_DIR=${OUTPUT_DIR}")
 fi
 
-sudo env "${env_args[@]}" scripts/customize_gsi.sh "$@"
+sudo env "${env_args[@]}" ./scripts/customize_gsi.sh "$@"
