@@ -15,10 +15,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check free disk space
+        run: |
+          df -h /
+          df -h /home/runner
+        shell: bash
+
+      - name: Free additional disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache
+          df -h /
+        shell: bash
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk git-core gnupg flex bison gperf             build-essential zip curl zlib1g-dev gcc-multilib g++-multilib             lib32ncurses5-dev libncurses5-dev x11proto-core-dev libx11-dev             lib32z1-dev libgl1-mesa-dev xsltproc unzip python3 python-is-python3
+          sudo apt-get install -y \
+            openjdk-11-jdk git-core gnupg flex bison gperf \
+            build-essential zip curl zlib1g-dev gcc-multilib g++-multilib \
+            lib32ncurses5-dev libncurses5-dev x11proto-core-dev libx11-dev \
+            lib32z1-dev libgl1-mesa-dev xsltproc unzip python3 python-is-python3
 
       - name: Install repo tool
         run: |
