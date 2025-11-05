@@ -4,8 +4,9 @@ set -euo pipefail
 # Customization script that patches an official AOSP GSI system image with NekoOS assets.
 # Requires sudo for mounting the raw image.
 
-: "${GSI_URL:=https://example.com/path/to/aosp-gsi.zip}"  # TODO: set to real Android 16 GSI download URL
-: "${GSI_ZIP:=aosp-gsi.zip}"
+: "${GSI_FLAVOR:=arm64}"  # Supported: arm64 (vanilla), arm64_gms (with Google services)
+: "${GSI_URL:=}"
+: "${GSI_ZIP:=}"
 : "${WORK_DIR:=work}"
 : "${OUTPUT_DIR:=output}"
 
@@ -21,6 +22,29 @@ require_tool() {
 }
 
 main() {
+  if [ -z "${GSI_URL}" ]; then
+    case "${GSI_FLAVOR}" in
+      arm64)
+        GSI_URL="https://dl.google.com/developers/android/baklava/images/gsi/aosp_arm64-exp-BP41.250916.012.A1-14330953-171efa95.zip"
+        ;;
+      arm64_gms|gms)
+        GSI_URL="https://dl.google.com/developers/android/baklava/images/gsi/gsi_gms_arm64-exp-BP41.250916.012.A1-14330953-45857949.zip"
+        ;;
+      *)
+        echo "fatal: unsupported GSI_FLAVOR '${GSI_FLAVOR}'" >&2
+        exit 1
+        ;;
+    esac
+    log "GSI_URL not provided, defaulting to ${GSI_FLAVOR} build"
+  else
+    log "Using user supplied GSI_URL"
+  fi
+
+  if [ -z "${GSI_ZIP}" ]; then
+    strip_query="${GSI_URL%%\?*}"
+    GSI_ZIP="$(basename "${strip_query}")"
+  fi
+
   require_tool curl
   require_tool unzip
   require_tool simg2img
